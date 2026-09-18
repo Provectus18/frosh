@@ -13,7 +13,9 @@ int main(void)
     while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
-
+	if (IsKeyPressed(KEY_F)){
+	    ToggleFullscreen();
+	  }
         // Move
         pos.x += vel.x * dt;
         pos.y += vel.y * dt;
