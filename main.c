@@ -9,42 +9,31 @@ int main(void)
     Vector2 pos = { W/2.0f, H/2.0f };
     float radius = 20.0f;
 
+    Camera2D camera = {
+    .offset = (Vector2){ W/2.0f, H/2.0f },
+    .rotation = 0.0f,
+    .zoom = 1.0f
+    };
+
     while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
-	if (IsKeyPressed(KEY_F)){
-	    ToggleFullscreen();
-	  }
-        
-	// Move the ball with Key inputs
-	
+	camera.target = pos;
+
+	if (IsKeyPressed(KEY_F)) ToggleFullscreen();
 	if (IsKeyDown(KEY_RIGHT)) pos.x += 2.0f;
         if (IsKeyDown(KEY_LEFT)) pos.x -= 2.0f;
         if (IsKeyDown(KEY_UP)) pos.y -= 2.0f;
         if (IsKeyDown(KEY_DOWN)) pos.y += 2.0f;
-	
-        // Prevent the ball from going out of frame, cling to the side
 
-	 if (pos.x - radius < 0) {
-        pos.x = radius;
-        }
-        if (pos.x + radius > W) {
-        pos.x = W - radius;
-        }
-        if (pos.y - radius < 0) {
-        pos.y = radius;
-        }
-        if (pos.y + radius > H) {
-        pos.y = H - radius;
-        }
 
-        if (pos.x - radius < W)
-	
-	// Draw the circle on the screen
-	BeginDrawing();
+        // Display the game
+
+        BeginDrawing();
             ClearBackground(RAYWHITE);
+            BeginMode2D(camera); 
             DrawCircleV(pos, radius, BLUE);
-            DrawText(TextFormat("FPS: %d", GetFPS()), 10, 10, 20, DARKGRAY);
+	    DrawText(TextFormat("FPS: %d", GetFPS()), 10, 10, 20, DARKGRAY);
         EndDrawing();
     }
 
