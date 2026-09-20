@@ -3,7 +3,12 @@
 struct Player {
   Vector2 pos;
   float radius;
-    };
+};
+
+struct Platform {
+  Vector2 pos;
+  Vector2 size;
+};
 
 int main(void) {
   const int W = 800, H = 450;
@@ -21,6 +26,10 @@ int main(void) {
       .radius = 20.0f
     };
 
+    struct Platform platform = {
+      .pos = { 0.0f, H/2.0f },
+      .size = { W, 100.0f },
+    };
 
     while (!WindowShouldClose()) {
       float dt = GetFrameTime();
@@ -39,6 +48,7 @@ int main(void) {
             ClearBackground(RAYWHITE);
             BeginMode2D(camera); 
             DrawCircleV(player.pos, player.radius, BLUE);
+	    DrawRectangleV(platform.pos, platform.size, GREEN);
 	    DrawText(TextFormat("FPS: %d", GetFPS()), 10, 10, 20, DARKGRAY);
         EndDrawing();
     }
