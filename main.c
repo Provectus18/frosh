@@ -13,8 +13,14 @@ struct Platform {
 int main(void) {
   const int W = 800, H = 450;
   InitWindow(W, H, "Frosh");
+  InitAudioDevice();  
   SetTargetFPS(60);
 
+    
+    Music music = LoadMusicStream("pond.wav");
+    SetMusicVolume(music, 0.7f);
+    PlayMusicStream(music);  // Starts playback
+    
     Camera2D camera = {
       .offset = (Vector2){ W/2.0f, H/2.0f },
       .rotation = 0.0f,
@@ -50,6 +56,7 @@ int main(void) {
             DrawCircleV(player.pos, player.radius, BLUE);
 	    DrawRectangleV(platform.pos, platform.size, GREEN);
 	    DrawText(TextFormat("FPS: %d", GetFPS()), 10, 10, 20, DARKGRAY);
+        UpdateMusicStream(music);
         EndDrawing();
     }
 
