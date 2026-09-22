@@ -32,44 +32,98 @@ int main(void) {
     };
 
     struct Platform platform = {
-      .pos = { 0.0f, H - 20.0f },
+      .pos = { 0.0f, H - 30.0f },
       .size = { W, 100.0f },
     };
+
+    
+    Vector2 velocity = { 0.0f, 0.0f };
+    const float GRAVITY = 1500.0f;
+    const float MOVE_SPEED = 500.0f;
+    const float JUMP_FORCE = -600.0f;
+    bool grounded = false;
+
 
     while (!WindowShouldClose()) {
       float dt = GetFrameTime();
       camera.target = player.pos;
 
       if (IsKeyPressed(KEY_F)) ToggleFullscreen();
+
+
       
-      // Store old position before movement, so that the player clamps
+
+      if (IsKeyDown(KEY_RIGHT)) velocity.x = MOVE_SPEED;
+      else if (IsKeyDown(KEY_LEFT)) velocity.x = -MOVE_SPEED;
+      else velocity.x = 0.0f;
+
+
+      velocity.y += GRAVITY * dt;
+
+      
+      if (IsKeyPressed(KEY_SPACE) && grounded) {
+        velocity.y = JUMP_FORCE;
+        grounded = false;
+      }
+
+      // Store the old position for collision.
       Vector2 oldPos = player.pos;
 
-      if (IsKeyDown(KEY_RIGHT)) player.pos.x += 5.0f;
-      if (IsKeyDown(KEY_LEFT)) player.pos.x -= 5.0f;
-      if (IsKeyDown(KEY_SPACE)) player.pos.y -= 8.0f;
-      if (IsKeyDown(KEY_DOWN)) player.pos.y += 2.0f;
+      
+      player.pos.x += velocity.x * dt;
+      player.pos.y += velocity.y * dt;
 
-
+      
       Rectangle platformRect = {
         platform.pos.x, platform.pos.y,
         platform.size.x, platform.size.y
       };
 
-      // Check if player collides with platform
       if (CheckCollisionCircleRec(player.pos, player.radius, platformRect)) {
-        // Reverts to old position
-        player.pos = oldPos;
+        // We hit the platform — figure out which side
+        // Calculate where we'd be without collision
+        Vector2 projectedPos = {
+          oldPos.x + velocity.x * dt,
+          oldPos.y + velocity.y * dt
+        };
+
+        // Check if we were falling onto the platform (landing)
+        if (velocity.y > 0 && oldPos.y + player.radius <= platform.pos.y) {
+          // Landing on top
+          player.pos.y = platform.pos.y - player.radius;
+          velocity.y = 0.0f;
+          grounded = true;
+        }
+        // Otherwise, we hit a side or bottom — just revert position
+        else {
+          player.pos = oldPos;
+          velocity.y = 0.0f;             // cancel vertical momentum on wall hit
+        }
+      } else {
+        grounded = false;
       }
 
-
+      // Keep player inside window bounds
+      if (player.pos.x < player.radius) {
+        player.pos.x = player.radius;
+        velocity.x = 0.0f;
+      }
+      if (player.pos.x > W - player.radius) {
+        player.pos.x = W - player.radius;
+        velocity.x = 0.0f;
+      }
+      if (player.pos.y > H - player.radius) {
+        player.pos.y = H - player.radius;
+        velocity.y = 0.0f;
+        grounded = true;
+      }
+      
       // Display the game
       BeginDrawing();
           ClearBackground(RAYWHITE);
           BeginMode2D(camera); 
           DrawCircleV(player.pos, player.radius, BLUE);
-          DrawRectangleV(platform.pos, platform.size, DARKGREEN);
-          DrawText(TextFormat("FPS: %d", GetFPS()), 10, 10, 20, DARKGRAY);
+          DrawRectangleV(platform.pos, platform.size, GREEN);
           UpdateMusicStream(music);
       EndDrawing();
     }
