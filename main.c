@@ -53,9 +53,6 @@ int main(void) {
 
       // Store the old position for collision.
       Vector2 oldPos = player.pos;
-      
-      player.pos.x += velocity.x * dt;
-      player.pos.y += velocity.y * dt;
 
       
       Rectangle greenBlock = {
