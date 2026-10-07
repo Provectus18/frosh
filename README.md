@@ -10,6 +10,6 @@ To build, run, and clean:
 
 #### TODO
 
-- make greenBlock reusable to make levels
-- make levels using a guile config
-- put textures
+- add startup screen
+- add characters
+- make some levels

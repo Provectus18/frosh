@@ -5,10 +5,11 @@
 
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 450
+#define TILE_PADDING 10
 
-#define BASE_SPEED      100.0f
-#define MAX_SPEED     700.0f
-#define ACCEL_RATE     200.0f
+#define BASE_SPEED      200.0f
+#define MAX_SPEED     800.0f
+#define ACCEL_RATE     250.0f
 #define DECEL_RATE    1200.0f
 
 typedef struct Player {
@@ -22,9 +23,11 @@ int main(void) {
     InitAudioDevice();
     SetTargetFPS(60);
 
-    Music music = LoadMusicStream("pond.wav");
+    Music music = LoadMusicStream("./Music/pond.wav");
     SetMusicVolume(music, 0.7f);
     PlayMusicStream(music);
+
+    Texture2D Ice = LoadTexture("./Textures/ice.png");
 
     LevelData *level = &g_level;
 
@@ -101,8 +104,25 @@ int main(void) {
 
         // Render
         BeginDrawing();
-            ClearBackground(DARKBLUE);
-            BeginMode2D(camera);
+	    ClearBackground(DARKBLUE);  
+	    float offsetX = fmod(player.pos.x * 0.05f, Ice.width);
+	    float offsetY = fmod(player.pos.y * 0.05f, Ice.height);
+
+	    
+	    // Calculate how many tiles we need to cover the screen
+	    int cols = (int)ceil((SCREEN_WIDTH + Ice.width * 2) / Ice.width);
+	    int rows = (int)ceil((SCREEN_HEIGHT + Ice.height * 2) / Ice.height);
+
+	    for (int row = -1; row < rows + 1; row++) {
+	      for (int col = -1; col < cols + 1; col++) {
+		int x = (int)(offsetX + col * Ice.width) - TILE_PADDING;
+		int y = (int)(offsetY + row * Ice.height) - TILE_PADDING;
+		  DrawTexture(Ice, x, y, WHITE);
+                }
+            }
+
+
+	    BeginMode2D(camera);
                 for (int i = 0; i < level->blockCount; i++) {
                     DrawRectangleRec(level->blocks[i], GREEN);
                 }
@@ -118,7 +138,8 @@ int main(void) {
 
         UpdateMusicStream(music);
     }
-
+    
+    UnloadTexture(Ice);
     UnloadMusicStream(music);
     CloseAudioDevice();
     CloseWindow();
