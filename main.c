@@ -83,23 +83,21 @@ int main(void) {
         if (velocity.x != 0.0f || velocity.y != 0.0f) {
             Vector2 oldPos = player.pos;
 
-            // X axis
+            // Block collision
             player.pos.x += velocity.x * dt;
-            for (int i = 0; i < level->blockCount; i++) {
+	    player.pos.y += velocity.y * dt;
+	    for (int i = 0; i < level->blockCount; i++) {
                 if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
                     player.pos.x = oldPos.x;
-                    break;
+		    player.pos.y = oldPos.y;
+		    break;
                 }
             }
 
-            // Y axis
-            player.pos.y += velocity.y * dt;
-            for (int i = 0; i < level->blockCount; i++) {
-                if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-                    player.pos.y = oldPos.y;
-                    break;
-                }
-            }
+	    // Sponge collision (Slows down)
+	    if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
+	      currentSpeed = 100.0f;
+	    }
         }
 
         // Render
