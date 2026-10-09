@@ -7,10 +7,7 @@
 #define SCREEN_HEIGHT 450
 #define TILE_PADDING 10
 
-#define BASE_SPEED      200.0f
-#define MAX_SPEED     800.0f
-#define ACCEL_RATE     250.0f
-#define DECEL_RATE    1200.0f
+#define BASE_SPEED      300.0f
 
 typedef struct Player {
     Vector2 pos;
@@ -52,28 +49,34 @@ int main(void) {
 
         // Read input direction
         Vector2 input = { 0.0f, 0.0f };
-        if (IsKeyDown(KEY_RIGHT)) input.x += 1.0f;
-        if (IsKeyDown(KEY_LEFT))  input.x -= 1.0f;
-        if (IsKeyDown(KEY_UP))   input.y -= 1.0f;
-        if (IsKeyDown(KEY_DOWN))  input.y += 1.0f;
+        if (IsKeyDown(KEY_L)) input.x += 1.0f;
+        if (IsKeyDown(KEY_H))  input.x -= 1.0f;
+        if (IsKeyDown(KEY_K))   input.y -= 1.0f;
+        if (IsKeyDown(KEY_J))  input.y += 1.0f;
 
-        bool isMoving = (input.x != 0.0f || input.y != 0.0f);
+	bool holdingG = IsKeyDown(KEY_G);
+	bool releasedG = IsKeyReleased(KEY_G);
 
-        if (isMoving) {
-            // Ramp up while held
-            currentSpeed += ACCEL_RATE * dt;
-            if (currentSpeed > MAX_SPEED) currentSpeed = MAX_SPEED;
-
-            // Normalize diagonal input
-            float len = sqrtf(input.x * input.x + input.y * input.y);
-            input.x /= len;
-            input.y /= len;
-        } else {
-            // Slow down when released
-            currentSpeed -= DECEL_RATE * dt;
-            if (currentSpeed < BASE_SPEED) currentSpeed = BASE_SPEED;
-        }
-
+	if (holdingG) {
+	  currentSpeed = BASE_SPEED + 300.0f;
+	  player.radius = 10.0f;
+	} else {  
+	  if (releasedG) currentSpeed = BASE_SPEED;
+	  if (player.radius < 20.0f) {
+	    player.radius = 20.0f;
+	    bool nowColliding = false;
+	    for (int i = 0; i < level->blockCount; i++) {
+	      if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+		nowColliding = true;
+		break;
+	      }
+	    }
+	    if (nowColliding) {
+	      player.radius = 10.0f;
+	    }
+	  }
+	}
+	
         Vector2 velocity = {
             input.x * currentSpeed,
             input.y * currentSpeed
@@ -84,7 +87,7 @@ int main(void) {
             Vector2 oldPos = player.pos;
 
             // Block collision
-            player.pos.x += velocity.x * dt;
+	    player.pos.x += velocity.x * dt;
 	    player.pos.y += velocity.y * dt;
 	    for (int i = 0; i < level->blockCount; i++) {
                 if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
@@ -96,7 +99,7 @@ int main(void) {
 
 	    // Sponge collision (Slows down)
 	    if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
-	      currentSpeed = 100.0f;
+	      currentSpeed -= 50.0f;
 	    }
         }
 
@@ -105,9 +108,6 @@ int main(void) {
 	    ClearBackground(DARKBLUE);  
 	    float offsetX = fmod(player.pos.x * 0.05f, Ice.width);
 	    float offsetY = fmod(player.pos.y * 0.05f, Ice.height);
-
-	    
-	    // Calculate how many tiles we need to cover the screen
 	    int cols = (int)ceil((SCREEN_WIDTH + Ice.width * 2) / Ice.width);
 	    int rows = (int)ceil((SCREEN_HEIGHT + Ice.height * 2) / Ice.height);
 
