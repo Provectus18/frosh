@@ -7,7 +7,7 @@
 #define SCREEN_HEIGHT 450
 #define TILE_PADDING 10
 
-#define BASE_SPEED      300.0f
+#define BASE_SPEED      800.0f
 
 typedef struct Player {
     Vector2 pos;
@@ -36,7 +36,7 @@ int main(void) {
 
     Player player = {
         .pos = { 0.0f, -20.0f },
-        .radius = 15.0f
+        .radius = 20.0f
     };
 
     float currentSpeed = BASE_SPEED;
@@ -58,7 +58,7 @@ int main(void) {
 	bool releasedG = IsKeyReleased(KEY_G);
 
 	if (holdingG) {
-	  currentSpeed = BASE_SPEED + 300.0f;
+	  currentSpeed = BASE_SPEED / 2;
 	  player.radius = 10.0f;
 	} else {  
 	  if (releasedG) currentSpeed = BASE_SPEED;
