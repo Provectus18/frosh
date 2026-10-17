@@ -4,7 +4,7 @@
 #include <math.h>
 
 #define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 450
+#define SCREEN_HEIGHT 600
 #define TILE_PADDING 10
 
 #define BASE_SPEED      800.0f
@@ -13,7 +13,6 @@ typedef struct Player {
     Vector2 pos;
     float radius;
 } Player;
-
 
 int main(void) {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
@@ -24,7 +23,9 @@ int main(void) {
     SetMusicVolume(music, 0.7f);
     PlayMusicStream(music);
 
-    Texture2D Ice = LoadTexture("./Textures/ice.png");
+    Texture2D IceTex = LoadTexture("./Textures/ice.png");
+    Texture2D SpongeTex = LoadTexture("./Textures/sponge.png");
+    Texture2D DryMudTex = LoadTexture("./Textures/dried-mud.png");
 
     LevelData *level = &g_level;
 
@@ -45,10 +46,9 @@ int main(void) {
         float dt = GetFrameTime();
         camera.target = player.pos;
 
-        if (IsKeyPressed(KEY_F)) ToggleFullscreen();
-
-        // Read input direction
-        Vector2 input = { 0.0f, 0.0f };
+        // Read input
+	if (IsKeyPressed(KEY_F)) ToggleFullscreen();
+	Vector2 input = { 0.0f, 0.0f };
         if (IsKeyDown(KEY_L)) input.x += 1.0f;
         if (IsKeyDown(KEY_H))  input.x -= 1.0f;
         if (IsKeyDown(KEY_K))   input.y -= 1.0f;
@@ -103,41 +103,46 @@ int main(void) {
 	    }
         }
 
-        // Render
+	// Render
         BeginDrawing();
 	    ClearBackground(DARKBLUE);  
-	    float offsetX = fmod(player.pos.x * 0.05f, Ice.width);
-	    float offsetY = fmod(player.pos.y * 0.05f, Ice.height);
-	    int cols = (int)ceil((SCREEN_WIDTH + Ice.width * 2) / Ice.width);
-	    int rows = (int)ceil((SCREEN_HEIGHT + Ice.height * 2) / Ice.height);
+	    float offsetX = fmod(player.pos.x * 0.05f, IceTex.width);
+	    float offsetY = fmod(player.pos.y * 0.05f, IceTex.height);
+	    int cols = (int)ceil((SCREEN_WIDTH + IceTex.width * 2) / IceTex.width);
+	    int rows = (int)ceil((SCREEN_HEIGHT + IceTex.height * 2) / IceTex.height);
 
 	    for (int row = -1; row < rows + 1; row++) {
 	      for (int col = -1; col < cols + 1; col++) {
-		int x = (int)(offsetX + col * Ice.width) - TILE_PADDING;
-		int y = (int)(offsetY + row * Ice.height) - TILE_PADDING;
-		  DrawTexture(Ice, x, y, WHITE);
+		int x = (int)(offsetX + col * IceTex.width) - TILE_PADDING;
+		int y = (int)(offsetY + row * IceTex.height) - TILE_PADDING;
+		  DrawTexture(IceTex, x, y, WHITE);
                 }
             }
 
-
 	    BeginMode2D(camera);
-                for (int i = 0; i < level->blockCount; i++) {
-                    DrawRectangleRec(level->blocks[i], GREEN);
-                }
 		DrawCircleV(player.pos, player.radius, RED);
-		DrawCircleV(level->sponge.pos, level->sponge.radius, YELLOW);
-            EndMode2D();
-
+		float diameter = level->sponge.radius * 2;
+		Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
+		Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
+		DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
+		Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
+		for (int i = 0; i < level->blockCount; i++) {
+		  DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
+                }
+		
+	    EndMode2D();
+	    
             // Speedometer
             char speedText[32];
             snprintf(speedText, sizeof(speedText), "Speed: %.0f", currentSpeed);
             DrawText(speedText, 10, 10, 20, WHITE);
         EndDrawing();
-
         UpdateMusicStream(music);
     }
     
-    UnloadTexture(Ice);
+    UnloadTexture(IceTex);
+    UnloadTexture(SpongeTex);
+    UnloadTexture(DryMudTex);
     UnloadMusicStream(music);
     CloseAudioDevice();
     CloseWindow();

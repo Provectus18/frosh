@@ -5,16 +5,15 @@
 
 #define MAX_BLOCKS    50
 
-   typedef struct Sponge {
-      Vector2 pos;
-      float radius;
-      } Sponge;
+typedef struct Sponge {
+  Vector2 pos;
+  float radius;
+} Sponge;
 
 typedef struct {
   Rectangle blocks[MAX_BLOCKS];
   int blockCount;
-  Sponge sponge;
-    
+  Sponge sponge;  
 } LevelData;
 
 // Define a single level here

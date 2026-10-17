@@ -13,3 +13,5 @@ To build, run, and clean:
 - add startup screen
 - add characters
 - make some levels
+- add a health bar that slowly regenerates over time
+- add a pause menu
