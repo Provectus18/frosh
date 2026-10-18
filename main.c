@@ -53,7 +53,7 @@ int main(void) {
         if (IsKeyDown(KEY_H))  input.x -= 1.0f;
         if (IsKeyDown(KEY_K))   input.y -= 1.0f;
         if (IsKeyDown(KEY_J))  input.y += 1.0f;
-
+	
 	bool holdingG = IsKeyDown(KEY_G);
 	bool releasedG = IsKeyReleased(KEY_G);
 
@@ -103,6 +103,11 @@ int main(void) {
 	    }
         }
 
+	bool pauseMenu;
+	
+	if (IsKeyPressed(KEY_P)) pauseMenu = true;
+	else if (IsKeyPressed(KEY_U)) pauseMenu = false;
+	
 	// Render
         BeginDrawing();
 	    ClearBackground(DARKBLUE);  
@@ -120,7 +125,8 @@ int main(void) {
             }
 
 	    BeginMode2D(camera);
-		DrawCircleV(player.pos, player.radius, RED);
+
+	        DrawCircleV(player.pos, player.radius, RED);
 		float diameter = level->sponge.radius * 2;
 		Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
 		Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
@@ -129,15 +135,18 @@ int main(void) {
 		for (int i = 0; i < level->blockCount; i++) {
 		  DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
                 }
-		
-	    EndMode2D();
+    	    EndMode2D();
 	    
             // Speedometer
             char speedText[32];
             snprintf(speedText, sizeof(speedText), "Speed: %.0f", currentSpeed);
             DrawText(speedText, 10, 10, 20, WHITE);
-        EndDrawing();
-        UpdateMusicStream(music);
+	    if (pauseMenu == true) {
+	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
+	      DrawText("Press U to Unpause", 300, 200, 20, BLACK);
+	    }
+	EndDrawing();
+        UpdateMusicStream(music);	
     }
     
     UnloadTexture(IceTex);
