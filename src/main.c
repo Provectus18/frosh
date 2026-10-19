@@ -19,13 +19,13 @@ int main(void) {
     InitAudioDevice();
     SetTargetFPS(60);
 
-    Music music = LoadMusicStream("./Music/pond.wav");
+    Music music = LoadMusicStream("../Music/pond.wav");
     SetMusicVolume(music, 0.7f);
     PlayMusicStream(music);
 
-    Texture2D IceTex = LoadTexture("./Textures/ice.png");
-    Texture2D SpongeTex = LoadTexture("./Textures/sponge.png");
-    Texture2D DryMudTex = LoadTexture("./Textures/dried-mud.png");
+    Texture2D IceTex = LoadTexture("../Textures/ice.png");
+    Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
+    Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
 
     LevelData *level = &g_level;
 
