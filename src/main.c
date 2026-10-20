@@ -15,8 +15,17 @@ typedef struct Player {
 } Player;
 
 int main(void) {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
-    InitAudioDevice();
+    LevelData *level = &g_level;
+	float currentSpeed = BASE_SPEED;
+	double startTime = 0.0;
+    double endTime   = 0.0;
+    bool finishedComplete = false;
+	bool pauseMenu;
+
+
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
+    startTime = GetTime();
+	InitAudioDevice();
     SetTargetFPS(60);
 
     Music music = LoadMusicStream("../Music/pond.wav");
@@ -26,8 +35,6 @@ int main(void) {
     Texture2D IceTex = LoadTexture("../Textures/ice.png");
     Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
     Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
-
-    LevelData *level = &g_level;
 
     Camera2D camera = {
         .offset = (Vector2){ SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f },
@@ -40,19 +47,19 @@ int main(void) {
         .radius = 20.0f
     };
 
-    float currentSpeed = BASE_SPEED;
-
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
         camera.target = player.pos;
-
-        // Read input
-	if (IsKeyPressed(KEY_F)) ToggleFullscreen();
-	Vector2 input = { 0.0f, 0.0f };
+		// Read input
+        if (IsKeyPressed(KEY_F)) ToggleFullscreen();
+        Vector2 input = { 0.0f, 0.0f };
         if (IsKeyDown(KEY_L)) input.x += 1.0f;
         if (IsKeyDown(KEY_H))  input.x -= 1.0f;
         if (IsKeyDown(KEY_K))   input.y -= 1.0f;
         if (IsKeyDown(KEY_J))  input.y += 1.0f;
+		//Pause menu
+		if (IsKeyPressed(KEY_P)) pauseMenu = true;
+		else if (IsKeyPressed(KEY_U)) pauseMenu = false;
 	
 	bool holdingG = IsKeyDown(KEY_G);
 	bool releasedG = IsKeyReleased(KEY_G);
@@ -101,13 +108,13 @@ int main(void) {
 	    if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
 	      currentSpeed -= 50.0f;
 	    }
+		// The Finish Line!
+        if (!finishedComplete && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
+            finishedComplete = true;
+            endTime = GetTime();
         }
+	}
 
-	bool pauseMenu;
-	
-	if (IsKeyPressed(KEY_P)) pauseMenu = true;
-	else if (IsKeyPressed(KEY_U)) pauseMenu = false;
-	
 	// Render
         BeginDrawing();
 	    ClearBackground(DARKBLUE);  
@@ -127,6 +134,7 @@ int main(void) {
 	    BeginMode2D(camera);
 
 	        DrawCircleV(player.pos, player.radius, RED);
+			DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
 		float diameter = level->sponge.radius * 2;
 		Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
 		Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
@@ -145,6 +153,19 @@ int main(void) {
 	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
 	      DrawText("Press U to Unpause", 300, 200, 20, BLACK);
 	    }
+		
+		// Print the time when hitting the finish line
+		if (finishedComplete) {
+		double timeTaken = endTime - startTime;
+		char timePrint[64];
+		snprintf(timePrint, sizeof(timePrint), "TIME: %.2f seconds", timeTaken);
+
+		int fontSize = 40;
+		int textWidth = MeasureText(timePrint, fontSize);
+		DrawRectangle(0, SCREEN_HEIGHT / 2 - 55, SCREEN_WIDTH, 110, Fade(BLACK, 0.65f));
+		DrawText(timePrint, SCREEN_WIDTH / 2 - textWidth / 2,
+				SCREEN_HEIGHT / 2 - 45, fontSize, WHITE);
+		}
 	EndDrawing();
         UpdateMusicStream(music);	
     }
