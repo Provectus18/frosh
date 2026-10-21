@@ -20,7 +20,7 @@ int main(void) {
 	double startTime = 0.0;
     double endTime   = 0.0;
     bool finishedComplete = false;
-	bool pauseMenu;
+	bool pauseMenu = false;
 
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
@@ -108,12 +108,13 @@ int main(void) {
 	    if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
 	      currentSpeed -= 50.0f;
 	    }
-		// The Finish Line!
-        if (!finishedComplete && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
+	}
+	
+	// The Finish Line!
+		if (!finishedComplete && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
             finishedComplete = true;
             endTime = GetTime();
         }
-	}
 
 	// Render
         BeginDrawing();
@@ -149,7 +150,7 @@ int main(void) {
             char speedText[32];
             snprintf(speedText, sizeof(speedText), "Speed: %.0f", currentSpeed);
             DrawText(speedText, 10, 10, 20, WHITE);
-	    if (pauseMenu == true) {
+	    if (pauseMenu) {
 	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
 	      DrawText("Press U to Unpause", 300, 200, 20, BLACK);
 	    }
