@@ -1,17 +1,15 @@
 # Frosh
 Frosh is a 2D tiled space-flight racing game.
 
-### How to build and run on distributions of GNU/Linux (GCC is recommended for compilation).
+### How to build and run (Cmake, make, and a C compiler is required and a unix-like Operating system)
 
-To build, run, and clean:
-`make`
-`make run`
-`make clean`
+1. Create a directory called `build` and cd into it
+2. run `cmake ..`
+3. run `make`
+4. run `./frosh-game`
 
 #### TODO
 
-- add startup screen
 - add characters
 - make some levels
 - add a health bar that slowly regenerates over time
-- add a pause menu
