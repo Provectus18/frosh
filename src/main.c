@@ -13,7 +13,7 @@ typedef struct Player {
     Vector2 pos;
     float radius;
 } Player;
-// TODO: integrate these gamestates in your code
+
 typedef enum GameState {
 	STATE_MENU,
 	STATE_PLAYING,
@@ -116,14 +116,15 @@ int main(void) {
 			if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
 			currentSpeed -= 50.0f;
 			}
+
+			// The Finish Line!
+			if (currentState != STATE_FINISHED && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
+				currentState = STATE_FINISHED;
+				endTime = GetTime();
+			}
 		}
 	}
 	
-	// The Finish Line!
-		if (currentState != STATE_FINISHED && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
-            currentState = STATE_FINISHED;
-            endTime = GetTime();
-        }
 
 	// Render
         BeginDrawing();
