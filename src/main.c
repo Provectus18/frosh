@@ -13,15 +13,20 @@ typedef struct Player {
     Vector2 pos;
     float radius;
 } Player;
+// TODO: integrate these gamestates in your code
+typedef enum GameState {
+	STATE_MENU,
+	STATE_PLAYING,
+	STATE_PAUSED,
+	STATE_FINISHED
+} GameState;
 
 int main(void) {
     LevelData *level = &g_level;
 	float currentSpeed = BASE_SPEED;
+	GameState currentState = STATE_PLAYING;
 	double startTime = 0.0;
     double endTime   = 0.0;
-    bool finishedComplete = false;
-	bool pauseMenu = false;
-
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
     startTime = GetTime();
@@ -50,75 +55,85 @@ int main(void) {
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
         camera.target = player.pos;
-		// Read input
-        if (IsKeyPressed(KEY_F)) ToggleFullscreen();
-        Vector2 input = { 0.0f, 0.0f };
-        if (IsKeyDown(KEY_L)) input.x += 1.0f;
-        if (IsKeyDown(KEY_H))  input.x -= 1.0f;
-        if (IsKeyDown(KEY_K))   input.y -= 1.0f;
-        if (IsKeyDown(KEY_J))  input.y += 1.0f;
-		//Pause menu
-		if (IsKeyPressed(KEY_P)) pauseMenu = true;
-		else if (IsKeyPressed(KEY_U)) pauseMenu = false;
-	
-	bool holdingG = IsKeyDown(KEY_G);
-	bool releasedG = IsKeyReleased(KEY_G);
+		if (IsKeyPressed(KEY_F)) ToggleFullscreen();
 
-	if (holdingG) {
-	  currentSpeed = BASE_SPEED / 2;
-	  player.radius = 10.0f;
-	} else {  
-	  if (releasedG) currentSpeed = BASE_SPEED;
-	  if (player.radius < 20.0f) {
-	    player.radius = 20.0f;
-	    bool nowColliding = false;
-	    for (int i = 0; i < level->blockCount; i++) {
-	      if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-		nowColliding = true;
-		break;
-	      }
-	    }
-	    if (nowColliding) {
-	      player.radius = 10.0f;
-	    }
-	  }
-	}
-	
-        Vector2 velocity = {
-            input.x * currentSpeed,
-            input.y * currentSpeed
-        };
+		// Change the state of the game
+		if (IsKeyPressed(KEY_P)) currentState = STATE_PAUSED;
+		if (IsKeyPressed(KEY_U)) currentState = STATE_PLAYING;
+		if (IsKeyPressed(KEY_R)) currentState = STATE_MENU;
+		
+		if (currentState == STATE_PLAYING) {
+			Vector2 input = { 0.0f, 0.0f };
+			if (IsKeyDown(KEY_L)) input.x += 1.0f;
+			if (IsKeyDown(KEY_H))  input.x -= 1.0f;
+			if (IsKeyDown(KEY_K))   input.y -= 1.0f;
+			if (IsKeyDown(KEY_J))  input.y += 1.0f;
+			
+		bool holdingG = IsKeyDown(KEY_G);
+		bool releasedG = IsKeyReleased(KEY_G);
 
-        // Movement with collision
-        if (velocity.x != 0.0f || velocity.y != 0.0f) {
-            Vector2 oldPos = player.pos;
+		if (holdingG) {
+		currentSpeed = BASE_SPEED / 2;
+		player.radius = 10.0f;
+		} else {  
+		if (releasedG) currentSpeed = BASE_SPEED;
+		if (player.radius < 20.0f) {
+			player.radius = 20.0f;
+			bool nowColliding = false;
+			for (int i = 0; i < level->blockCount; i++) {
+			if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+			nowColliding = true;
+			break;
+			}
+			}
+			if (nowColliding) {
+			player.radius = 10.0f;
+			}
+		}
+		}
+		
+			Vector2 velocity = {
+				input.x * currentSpeed,
+				input.y * currentSpeed
+			};
 
-            // Block collision
-	    player.pos.x += velocity.x * dt;
-	    player.pos.y += velocity.y * dt;
-	    for (int i = 0; i < level->blockCount; i++) {
-                if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-                    player.pos.x = oldPos.x;
-		    player.pos.y = oldPos.y;
-		    break;
-                }
-            }
+			// Movement with collision
+			if (velocity.x != 0.0f || velocity.y != 0.0f) {
+				Vector2 oldPos = player.pos;
 
-	    // Sponge collision (Slows down)
-	    if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
-	      currentSpeed -= 50.0f;
-	    }
+				// Block collision
+			player.pos.x += velocity.x * dt;
+			player.pos.y += velocity.y * dt;
+			for (int i = 0; i < level->blockCount; i++) {
+					if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+						player.pos.x = oldPos.x;
+				player.pos.y = oldPos.y;
+				break;
+					}
+				}
+
+			// Sponge collision (Slows down)
+			if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
+			currentSpeed -= 50.0f;
+			}
+		}
 	}
 	
 	// The Finish Line!
-		if (!finishedComplete && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
-            finishedComplete = true;
+		if (currentState != STATE_FINISHED && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
+            currentState = STATE_FINISHED;
             endTime = GetTime();
         }
 
 	// Render
         BeginDrawing();
-	    ClearBackground(DARKBLUE);  
+	    if (currentState == STATE_MENU) {
+			ClearBackground(WHITE);
+			DrawText("Press U to start", 100, 200, 30, BLACK);
+		}
+		
+		if (currentState == STATE_PLAYING) {
+		ClearBackground(DARKBLUE);  
 	    float offsetX = fmod(player.pos.x * 0.05f, IceTex.width);
 	    float offsetY = fmod(player.pos.y * 0.05f, IceTex.height);
 	    int cols = (int)ceil((SCREEN_WIDTH + IceTex.width * 2) / IceTex.width);
@@ -136,36 +151,38 @@ int main(void) {
 
 	        DrawCircleV(player.pos, player.radius, RED);
 			DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
-		float diameter = level->sponge.radius * 2;
-		Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
-		Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
-		DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
-		Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
-		for (int i = 0; i < level->blockCount; i++) {
-		  DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
-                }
-    	    EndMode2D();
+			
+			float diameter = level->sponge.radius * 2;
+			Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
+			Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
+			DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
+			
+			Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
+			for (int i = 0; i < level->blockCount; i++) {
+		  	DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
+            }
+    	EndMode2D();
 	    
             // Speedometer
             char speedText[32];
             snprintf(speedText, sizeof(speedText), "Speed: %.0f", currentSpeed);
             DrawText(speedText, 10, 10, 20, WHITE);
-	    if (pauseMenu) {
+	    }
+
+		if (currentState == STATE_PAUSED) {
 	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-	      DrawText("Press U to Unpause", 300, 200, 20, BLACK);
+	      DrawText("Press U to unpause", 300, 200, 20, BLACK);
 	    }
 		
 		// Print the time when hitting the finish line
-		if (finishedComplete) {
+		if (currentState == STATE_FINISHED) {
 		double timeTaken = endTime - startTime;
 		char timePrint[64];
 		snprintf(timePrint, sizeof(timePrint), "TIME: %.2f seconds", timeTaken);
 
-		int fontSize = 40;
-		int textWidth = MeasureText(timePrint, fontSize);
+		int textWidth = MeasureText(timePrint, 40);
 		DrawRectangle(0, SCREEN_HEIGHT / 2 - 55, SCREEN_WIDTH, 110, Fade(BLACK, 0.65f));
-		DrawText(timePrint, SCREEN_WIDTH / 2 - textWidth / 2,
-				SCREEN_HEIGHT / 2 - 45, fontSize, WHITE);
+		DrawText(timePrint, SCREEN_WIDTH / 2 - textWidth / 2, SCREEN_HEIGHT / 2 - 45, 40, WHITE);
 		}
 	EndDrawing();
         UpdateMusicStream(music);	
