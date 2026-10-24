@@ -24,12 +24,12 @@ typedef enum GameState {
 int main(void) {
     LevelData *level = &g_level;
 	float currentSpeed = BASE_SPEED;
-	GameState currentState = STATE_PLAYING;
+	GameState currentState = STATE_MENU;
 	double startTime = 0.0;
     double endTime   = 0.0;
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
-    startTime = GetTime();
+	startTime = GetTime();
 	InitAudioDevice();
     SetTargetFPS(60);
 
@@ -48,7 +48,7 @@ int main(void) {
     };
 
     Player player = {
-        .pos = { 0.0f, -20.0f },
+        .pos = level->startPos,
         .radius = 20.0f
     };
 
@@ -59,8 +59,12 @@ int main(void) {
 
 		// Change the state of the game
 		if (IsKeyPressed(KEY_P)) currentState = STATE_PAUSED;
-		if (IsKeyPressed(KEY_U)) currentState = STATE_PLAYING;
-		if (IsKeyPressed(KEY_R)) currentState = STATE_MENU;
+		if (IsKeyPressed(KEY_S)) currentState = STATE_PLAYING;
+		if (IsKeyPressed(KEY_R)) {
+			currentState = STATE_MENU;
+			player.pos = level->startPos;
+			startTime = 0.0;
+		}
 		
 		if (currentState == STATE_PLAYING) {
 			Vector2 input = { 0.0f, 0.0f };
@@ -130,7 +134,7 @@ int main(void) {
         BeginDrawing();
 	    if (currentState == STATE_MENU) {
 			ClearBackground(WHITE);
-			DrawText("Press U to start", 100, 200, 30, BLACK);
+			DrawText("Press S to start", 100, 200, 30, BLACK);
 		}
 		
 		if (currentState == STATE_PLAYING) {
@@ -172,7 +176,7 @@ int main(void) {
 
 		if (currentState == STATE_PAUSED) {
 	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-	      DrawText("Press U to unpause", 300, 200, 20, BLACK);
+	      DrawText("S to unpause\nR to restart the game", 300, 200, 20, BLACK);
 	    }
 		
 		// Print the time when hitting the finish line

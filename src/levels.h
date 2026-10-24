@@ -12,6 +12,7 @@ typedef struct Sponge {
 } Sponge;
 
 typedef struct {
+  Vector2 startPos;
   Rectangle blocks[MAX_BLOCKS];
   int blockCount;
   Rectangle spikes[MAX_SPIKES];
@@ -22,6 +23,7 @@ typedef struct {
 
 // Define a single level here
 static LevelData g_level = {
+    .startPos = { 0.0f, -20.0f },
     .blocks = {
       { 100.0f, -100.0f, 1000.0f,100.0f },
       { 100.0f, 100.0f, 1000.0f, 100.0f },
