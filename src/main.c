@@ -134,7 +134,7 @@ int main(void) {
         BeginDrawing();
 	    if (currentState == STATE_MENU) {
 			ClearBackground(WHITE);
-			DrawText("Press S to start", 100, 200, 30, BLACK);
+			DrawText("Welcome to Frosh!\n\nPress S to start", 100, 200, 30, BLACK);
 		}
 		
 		if (currentState == STATE_PLAYING) {
@@ -176,18 +176,16 @@ int main(void) {
 
 		if (currentState == STATE_PAUSED) {
 	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-	      DrawText("S to unpause\nR to restart the game", 300, 200, 20, BLACK);
+	      DrawText("S to unpause\nR to return to menu", 200, 200, 30, BLACK);
 	    }
 		
 		// Print the time when hitting the finish line
 		if (currentState == STATE_FINISHED) {
 		double timeTaken = endTime - startTime;
 		char timePrint[64];
-		snprintf(timePrint, sizeof(timePrint), "TIME: %.2f seconds", timeTaken);
-
-		int textWidth = MeasureText(timePrint, 40);
-		DrawRectangle(0, SCREEN_HEIGHT / 2 - 55, SCREEN_WIDTH, 110, Fade(BLACK, 0.65f));
-		DrawText(timePrint, SCREEN_WIDTH / 2 - textWidth / 2, SCREEN_HEIGHT / 2 - 45, 40, WHITE);
+		snprintf(timePrint, sizeof(timePrint), "Time taken: %.2f seconds\n\nPress R to return to the menu", timeTaken);
+	        DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
+		DrawText(timePrint, 200, 200, 30, BLACK);
 		}
 	EndDrawing();
         UpdateMusicStream(music);	
