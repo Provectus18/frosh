@@ -26,7 +26,7 @@ int main(void) {
 	float currentSpeed = BASE_SPEED;
 	GameState currentState = STATE_MENU;
 	double startTime = 0.0;
-    double endTime   = 0.0;
+    	double endTime   = 0.0;
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
 	startTime = GetTime();
@@ -59,11 +59,14 @@ int main(void) {
 
 		// Change the state of the game
 		if (IsKeyPressed(KEY_P)) currentState = STATE_PAUSED;
-		if (IsKeyPressed(KEY_S)) currentState = STATE_PLAYING;
+		if (IsKeyPressed(KEY_S)) {
+			currentState = STATE_PLAYING;
+			startTime = GetTime();
+		}
 		if (IsKeyPressed(KEY_R)) {
 			currentState = STATE_MENU;
 			player.pos = level->startPos;
-			startTime = 0.0;
+			endTime = 0.0;
 		}
 		
 		if (currentState == STATE_PLAYING) {
@@ -185,7 +188,7 @@ int main(void) {
 		char timePrint[64];
 		snprintf(timePrint, sizeof(timePrint), "Time taken: %.2f seconds\n\nPress R to return to the menu", timeTaken);
 	        DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-		DrawText(timePrint, 200, 200, 30, BLACK);
+		DrawText(timePrint, 200, 200, 30, BLACK);	
 		}
 	EndDrawing();
         UpdateMusicStream(music);	
