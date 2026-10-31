@@ -26,7 +26,11 @@ int main(void) {
 	float currentSpeed = BASE_SPEED;
 	GameState currentState = STATE_MENU;
 	double startTime = 0.0;
-    	double endTime   = 0.0;
+    double endTime = 0.0;
+	int healthCount = 3;
+	double cooldownTimer = 0.0;
+	const float COOLDOWN_DURATION = 1.0f;
+
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
 	startTime = GetTime();
@@ -67,6 +71,7 @@ int main(void) {
 			currentState = STATE_MENU;
 			player.pos = level->startPos;
 			endTime = 0.0;
+			healthCount = 3;
 		}
 		
 		if (currentState == STATE_PLAYING) {
@@ -112,25 +117,49 @@ int main(void) {
 			player.pos.x += velocity.x * dt;
 			player.pos.y += velocity.y * dt;
 			for (int i = 0; i < level->blockCount; i++) {
-					if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-						player.pos.x = oldPos.x;
-				player.pos.y = oldPos.y;
+				if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+				player.pos = oldPos;
 				break;
 					}
 				}
 
 			// Sponge collision (Slows down)
 			if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
-			currentSpeed -= 50.0f;
+			currentSpeed = 100.0f;
+			} else currentSpeed = BASE_SPEED;
+			
+			// Spike collision with cooldown
+				if (cooldownTimer > 0.0) {
+					cooldownTimer -= dt;
+				}
+
+				bool touchingSpike = false;
+				for (int i = 0; i < level->spikeCount; i++) {
+					if (CheckCollisionCircleRec(player.pos, player.radius, level->spikes[i])) {
+						player.pos = oldPos;
+						touchingSpike = true;
+						break;
+					}
+				}
+
+				if (touchingSpike && cooldownTimer <= 0.0) {
+					healthCount--;
+					if (healthCount < 0) healthCount = 0;
+					cooldownTimer = COOLDOWN_DURATION;
+				}
+			} else {
+				if (cooldownTimer > 0.0) {
+					cooldownTimer -= dt;
+				}
 			}
 
+			
 			// The Finish Line!
 			if (currentState != STATE_FINISHED && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
 				currentState = STATE_FINISHED;
 				endTime = GetTime();
 			}
 		}
-	}
 	
 
 	// Render
@@ -169,12 +198,14 @@ int main(void) {
 			for (int i = 0; i < level->blockCount; i++) {
 		  	DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
             }
+
+			for (int i = 0; i < level->spikeCount; i++) {
+				DrawRectangleRec(level->spikes[i], BROWN);
+			}
     	EndMode2D();
-	    
-            // Speedometer
-            char speedText[32];
-            snprintf(speedText, sizeof(speedText), "Speed: %.0f", currentSpeed);
-            DrawText(speedText, 10, 10, 20, WHITE);
+			DrawText(TextFormat("Speed: %.0f", currentSpeed), 10, 10, 20, WHITE);
+			DrawText(TextFormat("Health: %d", healthCount), 200, 10, 20, WHITE);
+
 	    }
 
 		if (currentState == STATE_PAUSED) {
@@ -191,7 +222,7 @@ int main(void) {
 		DrawText(timePrint, 200, 200, 30, BLACK);	
 		}
 	EndDrawing();
-        UpdateMusicStream(music);	
+        UpdateMusicStream(music);
     }
     
     UnloadTexture(IceTex);
