@@ -197,15 +197,28 @@ int main(void) {
 			Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
 			for (int i = 0; i < level->blockCount; i++) {
 		  	DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
-            }
+			}
 
 			for (int i = 0; i < level->spikeCount; i++) {
 				DrawRectangleRec(level->spikes[i], BROWN);
 			}
-    	EndMode2D();
+	    EndMode2D();
 			DrawText(TextFormat("Speed: %.0f", currentSpeed), 10, 10, 20, WHITE);
-			DrawText(TextFormat("Health: %d", healthCount), 200, 10, 20, WHITE);
 
+			switch(healthCount) {
+			case 3:
+			  DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, GREEN);
+			  break;
+			case 2:
+			   DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, YELLOW);
+			   break;
+			case 1:
+			  DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, RED);
+			  break;
+			case 0:
+			  currentState = STATE_FINISHED;
+			  break;
+			}
 	    }
 
 		if (currentState == STATE_PAUSED) {
@@ -214,12 +227,10 @@ int main(void) {
 	    }
 		
 		// Print the time when hitting the finish line
-		if (currentState == STATE_FINISHED) {
-		double timeTaken = endTime - startTime;
-		char timePrint[64];
-		snprintf(timePrint, sizeof(timePrint), "Time taken: %.2f seconds\n\nPress R to return to the menu", timeTaken);
-	        DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-		DrawText(timePrint, 200, 200, 30, BLACK);	
+		if (currentState == STATE_FINISHED || healthCount == 0) {
+		  double timeTaken = endTime - startTime;
+		  DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
+		  DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
 		}
 	EndDrawing();
         UpdateMusicStream(music);
