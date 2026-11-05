@@ -164,76 +164,78 @@ int main(void) {
 
 	// Render
         BeginDrawing();
-	        if (currentState == STATE_MENU) {
-			ClearBackground(WHITE);
-			DrawText("Welcome to Frosh!\n\nPress S to start", 100, 200, 30, BLACK);
-		}
-		
-		if (currentState == STATE_PLAYING) {
-		ClearBackground(DARKBLUE);  
-	    float offsetX = fmod(player.pos.x * 0.05f, IceTex.width);
-	    float offsetY = fmod(player.pos.y * 0.05f, IceTex.height);
-	    int cols = (int)ceil((SCREEN_WIDTH + IceTex.width * 2) / IceTex.width);
-	    int rows = (int)ceil((SCREEN_HEIGHT + IceTex.height * 2) / IceTex.height);
+	switch (currentState) {
 
-	    for (int row = -1; row < rows + 1; row++) {
-	      for (int col = -1; col < cols + 1; col++) {
-		int x = (int)(offsetX + col * IceTex.width) - TILE_PADDING;
-		int y = (int)(offsetY + row * IceTex.height) - TILE_PADDING;
-		  DrawTexture(IceTex, x, y, WHITE);
-                }
+	case STATE_MENU:
+	  ClearBackground(WHITE);
+          DrawText("Welcome to Frosh!\n\nPress S to start", 100, 200, 30, BLACK);
+	  break;
+
+	case STATE_PLAYING:
+	  ClearBackground(DARKBLUE);  
+	  float offsetX = fmod(player.pos.x * 0.05f, IceTex.width);
+	  float offsetY = fmod(player.pos.y * 0.05f, IceTex.height);
+	  int cols = (int)ceil((SCREEN_WIDTH + IceTex.width * 2) / IceTex.width);
+	  int rows = (int)ceil((SCREEN_HEIGHT + IceTex.height * 2) / IceTex.height);
+
+	  for (int row = -1; row < rows + 1; row++) {
+	    for (int col = -1; col < cols + 1; col++) {
+	      int x = (int)(offsetX + col * IceTex.width) - TILE_PADDING;
+	      int y = (int)(offsetY + row * IceTex.height) - TILE_PADDING;
+	      DrawTexture(IceTex, x, y, WHITE);
             }
+          }
 
-	    BeginMode2D(camera);
+	  BeginMode2D(camera);
 
-	        DrawCircleV(player.pos, player.radius, RED);
-			DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
+	  DrawCircleV(player.pos, player.radius, RED);
+	  DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
 			
-			float diameter = level->sponge.radius * 2;
-			Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
-			Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
-			DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
+	  float diameter = level->sponge.radius * 2;
+	  Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
+	  Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
+	  DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
 			
-			Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
-			for (int i = 0; i < level->blockCount; i++) {
-		  	DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
-			}
+	  Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
+	  for (int i = 0; i < level->blockCount; i++) {
+	    DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
+	  }
 
-			for (int i = 0; i < level->spikeCount; i++) {
-				DrawRectangleRec(level->spikes[i], BROWN);
-			}
-	    EndMode2D();
-			DrawText(TextFormat("Speed: %.0f", currentSpeed), 10, 10, 20, WHITE);
+	  for (int i = 0; i < level->spikeCount; i++) {
+	    DrawRectangleRec(level->spikes[i], BROWN);
+	  }
+	  EndMode2D();
+	  DrawText(TextFormat("Speed: %.0f", currentSpeed), 10, 10, 20, WHITE);
 
-			switch(healthCount) {
-			case 3:
-			  DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, GREEN);
-			  break;
-			case 2:
-			   DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, YELLOW);
-			   break;
-			case 1:
-			  DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, RED);
-			  break;
-			case 0:
-			  currentState = STATE_FINISHED;
-			  break;
-			}
-	    }
+	  switch(healthCount) {
+	  case 3:
+	    DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, GREEN);
+	    break;
+	  case 2:
+	    DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, YELLOW);
+	    break;
+	  case 1:
+	    DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, RED);
+	    break;
+	  case 0:
+	    currentState = STATE_FINISHED;
+	    break;
+	  }
+	  break;
 
-		if (currentState == STATE_PAUSED) {
+	case STATE_PAUSED:
 		  DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
 		  DrawText("S to unpause\nR to return to menu", 200, 200, 30, BLACK);
-		}
-		
-		// When finished
-		if (currentState == STATE_FINISHED) {
+		  break;
+		  
+	case STATE_FINISHED:
 		  double timeTaken = endTime - startTime;
 		  DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
 		  if(healthCount == 0) {
 		    DrawText("You have gone too far...\n\nPress R to return to menu", 200, 200, 30, BLACK);
 		  } else DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
-		}
+		  break;
+	}	  
 	EndDrawing();
         UpdateMusicStream(music);
     }
