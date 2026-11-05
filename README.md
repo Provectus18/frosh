@@ -12,4 +12,4 @@ Frosh is a 2D tiled space-flight racing game.
 
 - add characters
 - make some levels
-- add a health bar that slowly regenerates over time
+- add some music
