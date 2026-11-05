@@ -93,13 +93,13 @@ int main(void) {
 			player.radius = 20.0f;
 			bool nowColliding = false;
 			for (int i = 0; i < level->blockCount; i++) {
-			if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-			nowColliding = true;
-			break;
-			}
+			  if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+			    nowColliding = true;
+			    break;
+			  }
 			}
 			if (nowColliding) {
-			player.radius = 10.0f;
+			  player.radius = 10.0f;
 			}
 		}
 		}
@@ -164,7 +164,7 @@ int main(void) {
 
 	// Render
         BeginDrawing();
-	    if (currentState == STATE_MENU) {
+	        if (currentState == STATE_MENU) {
 			ClearBackground(WHITE);
 			DrawText("Welcome to Frosh!\n\nPress S to start", 100, 200, 30, BLACK);
 		}
@@ -222,15 +222,17 @@ int main(void) {
 	    }
 
 		if (currentState == STATE_PAUSED) {
-	      DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-	      DrawText("S to unpause\nR to return to menu", 200, 200, 30, BLACK);
-	    }
+		  DrawRectangle( 100.0f, 100.0f, 600.0f, 400.0f, WHITE);
+		  DrawText("S to unpause\nR to return to menu", 200, 200, 30, BLACK);
+		}
 		
-		// Print the time when hitting the finish line
-		if (currentState == STATE_FINISHED || healthCount == 0) {
+		// When finished
+		if (currentState == STATE_FINISHED) {
 		  double timeTaken = endTime - startTime;
 		  DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-		  DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
+		  if(healthCount == 0) {
+		    DrawText("You have gone too far...\n\nPress R to return to menu", 200, 200, 30, BLACK);
+		  } else DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
 		}
 	EndDrawing();
         UpdateMusicStream(music);
