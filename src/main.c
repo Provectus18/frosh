@@ -37,7 +37,8 @@ int main(void) {
   const float COOLDOWN_DURATION = 1.0f;
   
   Vector2 velocity = { 0.0f, 0.0f };
-  
+
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
   startTime = GetTime();
   InitAudioDevice();
