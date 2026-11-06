@@ -8,6 +8,11 @@
 #define TILE_PADDING 10
 
 #define BASE_SPEED      800.0f
+#define MAX_SPEED        800.0f
+#define ACCELERATION     1600.0f
+#define DECEL_NORMAL     0.97f
+#define DECEL_SLOW       0.92f
+#define DECEL_SLOW_SPEED 0.85f
 
 typedef struct Player {
     Vector2 pos;
@@ -30,8 +35,9 @@ int main(void) {
   int healthCount = 3;
   double cooldownTimer = 0.0;
   const float COOLDOWN_DURATION = 1.0f;
-
-
+  
+  Vector2 velocity = { 0.0f, 0.0f };
+  
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Frosh");
   startTime = GetTime();
   InitAudioDevice();
@@ -66,6 +72,7 @@ int main(void) {
     if (IsKeyPressed(KEY_S)) {
       currentState = STATE_PLAYING;
       startTime = GetTime();
+      velocity = (Vector2){ 0.0f, 0.0f };
     }
     if (IsKeyPressed(KEY_R)) {
       currentState = STATE_MENU;
@@ -80,84 +87,89 @@ int main(void) {
       if (IsKeyDown(KEY_H))  input.x -= 1.0f;
       if (IsKeyDown(KEY_K))   input.y -= 1.0f;
       if (IsKeyDown(KEY_J))  input.y += 1.0f;
-			
+
       bool holdingG = IsKeyDown(KEY_G);
-      bool releasedG = IsKeyReleased(KEY_G);
+      
+      float decel = DECEL_NORMAL;
+      float accelMult = 1.5f;
+      float maxSpeed = MAX_SPEED;
 
       if (holdingG) {
-	currentSpeed = BASE_SPEED / 2;
-	player.radius = 10.0f;
+        player.radius = 10.0f;
+        //decel = DECEL_SLOW;
+        accelMult = 1.0f;
+        maxSpeed = MAX_SPEED / 3.0f * 2.0f;
       } else {  
-	if (releasedG) currentSpeed = BASE_SPEED;
-	if (player.radius < 20.0f) {
-	  player.radius = 20.0f;
-	  bool nowColliding = false;
-	  for (int i = 0; i < level->blockCount; i++) {
-	    if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-	      nowColliding = true;
-	      break;
-	    }
-	  }
-	  if (nowColliding) {
-	    player.radius = 10.0f;
-	  }
-	}
-      }
-		
-      Vector2 velocity = {
-	input.x * currentSpeed,
-	input.y * currentSpeed
-      };
-
-      // Movement with collision
-      if (velocity.x != 0.0f || velocity.y != 0.0f) {
-	Vector2 oldPos = player.pos;
-
-	// Block collision
-	player.pos.x += velocity.x * dt;
-	player.pos.y += velocity.y * dt;
-	for (int i = 0; i < level->blockCount; i++) {
-	  if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
-	    player.pos = oldPos;
-	    break;
-	  }
-	}
-
-	// Sponge collision (Slows down)
-	if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
-	  currentSpeed = 100.0f;
-	} else currentSpeed = BASE_SPEED;
-			
-	// Spike collision with cooldown
-	if (cooldownTimer > 0.0) {
-	  cooldownTimer -= dt;
-	}
-
-	bool touchingSpike = false;
-	for (int i = 0; i < level->spikeCount; i++) {
-	  if (CheckCollisionCircleRec(player.pos, player.radius, level->spikes[i])) {
-	    player.pos = oldPos;
-	    touchingSpike = true;
-	    break;
-	  }
-	}
-
-	if (touchingSpike && cooldownTimer <= 0.0) {
-	  healthCount--;
-	  if (healthCount < 0) healthCount = 0;
-	  cooldownTimer = COOLDOWN_DURATION;
-	}
-      } else {
-	if (cooldownTimer > 0.0) {
-	  cooldownTimer -= dt;
-	}
+        player.radius = 20.0f;
       }
 
-			
+      velocity.x += input.x * ACCELERATION * accelMult * dt;
+      velocity.y += input.y * ACCELERATION * accelMult * dt;
+
+      Vector2 oldPos = player.pos;
+
+      // We are going to do per axis collision so the player can slide against walls
+      player.pos.x += velocity.x * dt;
+      for (int i = 0; i < level->blockCount; i++) {
+        if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+          player.pos.x = oldPos.x;
+          velocity.x = 0.0f;
+        }
+      }
+
+      player.pos.y += velocity.y * dt;
+      for (int i = 0; i < level->blockCount; i++) {
+        if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
+          player.pos.y = oldPos.y;
+          velocity.y = 0.0f;
+        }
+      }
+
+      // Sponge collision (friction)
+      if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
+        decel = DECEL_SLOW_SPEED;
+      }
+
+      velocity.x *= decel;
+      velocity.y *= decel;
+
+      float speed = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+      if (speed > maxSpeed && speed > 0.0f) {
+        velocity.x = velocity.x / speed * maxSpeed;
+        velocity.y = velocity.y / speed * maxSpeed;
+      }
+
+      // Spike collision with cooldown and pushback
+      if (cooldownTimer > 0.0) {
+        cooldownTimer -= dt;
+      }
+
+      bool touchingSpike = false;
+      for (int i = 0; i < level->spikeCount; i++) {
+        if (CheckCollisionCircleRec(player.pos, player.radius, level->spikes[i])) {
+          float pushBack = 20.0f;
+          if (fabsf(velocity.x) > fabsf(velocity.y)) {
+            player.pos.x += (velocity.x > 0.0f ? -pushBack : pushBack);
+          } else {
+            player.pos.y += (velocity.y > 0.0f ? -pushBack : pushBack);
+          }
+          touchingSpike = true;
+          break;
+        }
+      }
+
+      if (touchingSpike && cooldownTimer <= 0.0) {
+        healthCount--;
+        if (healthCount < 0) healthCount = 0;
+        cooldownTimer = COOLDOWN_DURATION;
+        velocity.x *= -1.0f;
+        velocity.y *= -1.0f;
+      }
+
       // The Finish Line!
       if (currentState != STATE_FINISHED && CheckCollisionCircleRec(player.pos, player.radius, level->finishLine)) {
-	currentState = STATE_FINISHED;
-	endTime = GetTime();
+        currentState = STATE_FINISHED;
+        endTime = GetTime();
       }
     }
 	
@@ -205,7 +217,8 @@ int main(void) {
 	DrawRectangleRec(level->spikes[i], BROWN);
       }
       EndMode2D();
-      DrawText(TextFormat("Speed: %.0f", currentSpeed), 10, 10, 20, WHITE);
+      float actualSpeed = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+      DrawText(TextFormat("Speed: %.0f", actualSpeed), 10, 10, 20, WHITE);
 
       switch(healthCount) {
       case 3:
@@ -231,7 +244,7 @@ int main(void) {
     case STATE_FINISHED:
       double timeTaken = endTime - startTime;
       DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
-      if (healthCount == 0) DrawText("You have gone too far...\n\nPress R to return to menu", 200, 200, 30, BLACK);
+      if (healthCount == 0) DrawText("You have gone too far...\n\nPress R to return to menu", 200, 200, 30, BLACK); // Every game needs an ominous message when you die
       else DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
       break;
     }	  
