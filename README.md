@@ -1,4 +1,7 @@
 # Frosh
+[![Homepage](https://img.shields.io/badge/homepage-Pool_Ducks-blue.svg)](https://pool-ducks.com)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+
 Frosh is a 2D tiled space-flight racing game.
 
 ### How to build and run (Cmake, make, and a C compiler is required and a unix-like Operating system)
