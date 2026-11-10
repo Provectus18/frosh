@@ -44,10 +44,14 @@ int main(void) {
   InitAudioDevice();
   SetTargetFPS(60);
 
-  Music music = LoadMusicStream("../Music/pond.wav");
-  SetMusicVolume(music, 0.7f);
-  PlayMusicStream(music);
-
+  Music pondTheme = LoadMusicStream("../Music/pond.wav");
+  Music woodTheme = LoadMusicStream("../Music/wood.wav");
+  SetMusicVolume(pondTheme, 0.7f);
+  SetMusicVolume(pondTheme, 0.7f);
+  PlayMusicStream(pondTheme);
+  PlayMusicStream(woodTheme);
+  
+  Texture2D PlayerTex = LoadTexture("../Textures/slingdo.png");
   Texture2D IceTex = LoadTexture("../Textures/ice.png");
   Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
   Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
@@ -97,7 +101,6 @@ int main(void) {
 
       if (holdingG) {
         player.radius = 10.0f;
-        //decel = DECEL_SLOW;
         accelMult = 1.0f;
         maxSpeed = MAX_SPEED / 3.0f * 2.0f;
       } else {  
@@ -126,7 +129,7 @@ int main(void) {
         }
       }
 
-      // Sponge collision (friction)
+      // Sponge collision (Slow down)
       if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
         decel = DECEL_SLOW_SPEED;
       }
@@ -182,6 +185,7 @@ int main(void) {
     case STATE_MENU:
       ClearBackground(WHITE);
       DrawText("Welcome to Frosh!\n\nPress S to start", 100, 200, 30, BLACK);
+      UpdateMusicStream(pondTheme);
       break;
 
     case STATE_PLAYING:
@@ -201,13 +205,22 @@ int main(void) {
 
       BeginMode2D(camera);
 
-      DrawCircleV(player.pos, player.radius, RED);
+      float playerDiameter = player.radius * 2;
+      float scale = (playerDiameter / PlayerTex.width) * 2;
+      Rectangle playerRec = {
+	player.pos.x - (PlayerTex.width  * scale) / 2,
+	player.pos.y - (PlayerTex.height * scale) / 2,
+	PlayerTex.width  * scale,
+	PlayerTex.height * scale
+      };
+      Rectangle playerSrcRec = {0, 0, (float)PlayerTex.width, (float)PlayerTex.height};
+      DrawTexturePro(PlayerTex, playerSrcRec, playerRec, (Vector2){0, 0}, 0.0f, WHITE);
       DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
 			
-      float diameter = level->sponge.radius * 2;
-      Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, diameter, diameter};
-      Rectangle spongeTextureSize = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
-      DrawTexturePro(SpongeTex, spongeTextureSize, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
+      float spongeDiameter = level->sponge.radius * 2;
+      Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, spongeDiameter, spongeDiameter};
+      Rectangle spongeSrcRec = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
+      DrawTexturePro(SpongeTex, spongeSrcRec, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
 			
       Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
       for (int i = 0; i < level->blockCount; i++) {
@@ -221,15 +234,16 @@ int main(void) {
       float actualSpeed = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
       DrawText(TextFormat("Speed: %.0f", actualSpeed), 10, 10, 20, WHITE);
 
+      Rectangle healthBar = { 150.0f, 10.0f, 40.0f, 20.0f };
       switch(healthCount) {
       case 3:
-	DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, GREEN);
+	DrawRectangleRec(healthBar, GREEN);
 	break;
       case 2:
-	DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, YELLOW);
+	DrawRectangleRec(healthBar, YELLOW);
 	break;
       case 1:
-	DrawRectangle(150.0f, 10.0f, 40.0f, 20.0f, RED);
+	DrawRectangleRec(healthBar, RED);
 	break;
       case 0:
 	currentState = STATE_FINISHED;
@@ -246,17 +260,20 @@ int main(void) {
       double timeTaken = endTime - startTime;
       DrawRectangle(100.0f, 100.0f, 600.0f, 400.0f, WHITE);
       if (healthCount == 0) DrawText("You have gone too far...\n\nPress R to return to menu", 200, 200, 30, BLACK); // Every game needs an ominous message when you die
-      else DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
+      else {
+	DrawText(TextFormat("Time taken: %.2f seconds\n\nPress R to return to menu", timeTaken), 200, 200, 30, BLACK);
+	UpdateMusicStream(woodTheme);
+      }
       break;
     }	  
     EndDrawing();
-    UpdateMusicStream(music);
   }
-    
+  UnloadTexture(PlayerTex);
   UnloadTexture(IceTex);
   UnloadTexture(SpongeTex);
   UnloadTexture(DryMudTex);
-  UnloadMusicStream(music);
+  UnloadMusicStream(pondTheme);
+  UnloadMusicStream(woodTheme);
   CloseAudioDevice();
   CloseWindow();
   return 0;
