@@ -1,6 +1,6 @@
 # Frosh
 [![Homepage](https://img.shields.io/badge/homepage-Pool_Ducks-blue.svg)](https://pool-ducks.com)
-[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+[![Licenses](https://img.shields.io/badge/licenses-GPLv3,_CC0-blue.svg)](README.md)
 
 Frosh is a 2D tiled space-flight racing game.
 
