@@ -18,3 +18,7 @@ Frosh is a 2D tiled space-flight racing game.
 - add characters
 - make some levels
 - add some music
+
+#### LICENSING
+
+All code are licensed under the GPLv3. Game assets in /Textures and /Music, are licensed under the CC0.
