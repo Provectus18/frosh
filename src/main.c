@@ -57,7 +57,8 @@ int main(void) {
   Texture2D IceTex = LoadTexture("../Textures/ice.png");
   Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
   Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
-
+  Texture2D FinishLineTex = LoadTexture("../Textures/flag.png");
+  
   Camera2D camera = {
     .offset = (Vector2){ SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f },
     .rotation = 0.0f,
@@ -221,8 +222,10 @@ int main(void) {
       };
       Rectangle playerSrcRec = {0, 0, (float)PlayerTex.width, (float)PlayerTex.height};
       DrawTexturePro(PlayerTex, playerSrcRec, playerRec, (Vector2){0, 0}, 0.0f, WHITE);
-      DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
-			
+
+      Rectangle finishLineSrcRec = {0, 0,  (float)FinishLineTex.width, (float)FinishLineTex.height};
+      DrawTexturePro(FinishLineTex, finishLineSrcRec, level->finishLine, (Vector2){ 0, 0 }, 0.0f, WHITE);
+      
       for (int i = 0; i < level->spongeCount; i++) {
 	float spongeDiameter = level->sponge[i].radius * 2;
 	Rectangle spongeRec = {
@@ -284,6 +287,7 @@ int main(void) {
   UnloadTexture(IceTex);
   UnloadTexture(SpongeTex);
   UnloadTexture(DryMudTex);
+  UnloadTexture(FinishLineTex);
   UnloadMusicStream(pondTheme);
   UnloadMusicStream(woodTheme);
   CloseAudioDevice();
