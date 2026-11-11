@@ -15,8 +15,9 @@
 #define DECEL_SLOW_SPEED 0.85f
 
 typedef struct Player {
-    Vector2 pos;
-    float radius;
+  Vector2 pos;
+  float radius;
+  float expandHitBox;
 } Player;
 
 typedef enum GameState {
@@ -35,7 +36,8 @@ int main(void) {
   int healthCount = 3;
   double cooldownTimer = 0.0;
   const float COOLDOWN_DURATION = 1.0f;
-  
+
+  bool inCollision = false;
   Vector2 velocity = { 0.0f, 0.0f };
 
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -64,7 +66,8 @@ int main(void) {
 
   Player player = {
     .pos = level->startPos,
-    .radius = 20.0f
+    .radius = 20.0f,
+    .expandHitBox = 20.0f
   };
 
   while (!WindowShouldClose()) {
@@ -103,7 +106,7 @@ int main(void) {
         player.radius = 10.0f;
         accelMult = 1.0f;
         maxSpeed = MAX_SPEED / 3.0f * 2.0f;
-      } else {  
+      } else if (!holdingG && inCollision == false) {  
         player.radius = 20.0f;
       }
 
@@ -111,6 +114,7 @@ int main(void) {
       velocity.y += input.y * ACCELERATION * accelMult * dt;
 
       Vector2 oldPos = player.pos;
+      inCollision = false;
 
       // We are going to do per axis collision so the player can slide against walls
       player.pos.x += velocity.x * dt;
@@ -118,7 +122,7 @@ int main(void) {
         if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
           player.pos.x = oldPos.x;
           velocity.x = 0.0f;
-        }
+        } else if (CheckCollisionCircleRec(player.pos, player.expandHitBox, level->blocks[i])) inCollision = true;
       }
 
       player.pos.y += velocity.y * dt;
@@ -126,7 +130,8 @@ int main(void) {
         if (CheckCollisionCircleRec(player.pos, player.radius, level->blocks[i])) {
           player.pos.y = oldPos.y;
           velocity.y = 0.0f;
-        }
+	  inCollision = true;
+        } else if (CheckCollisionCircleRec(player.pos, player.expandHitBox, level->blocks[i])) inCollision = true;
       }
 
       // Sponge collision (Slow down)
@@ -158,6 +163,7 @@ int main(void) {
             player.pos.y += (velocity.y > 0.0f ? -pushBack : pushBack);
           }
           touchingSpike = true;
+	  inCollision = true;
           break;
         }
       }
