@@ -33,9 +33,10 @@ static LevelData g_level = {
     },
     .blockCount = 3,
     .spikes = {
-      { 100.0f, -250.0f, 50.0f, 100.0f }
+      { 100.0f, -250.0f, 50.0f, 100.0f },
+      { 1300.0f, -300.0f, 50.0f, 50.0f }
     },
-    .spikeCount = 1,
+    .spikeCount = 2,
     .sponge = {
       { 1200.0f, -100.0f, 100.0f },
       { 500.0f, -200.0f, 50.0f },
