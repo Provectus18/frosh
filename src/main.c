@@ -57,8 +57,9 @@ int main(void) {
   Texture2D IceTex = LoadTexture("../Textures/ice.png");
   Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
   Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
+  Texture2D SpikeTex = LoadTexture("../Textures/spike.png");
   Texture2D FinishLineTex = LoadTexture("../Textures/flag.png");
-  
+
   Camera2D camera = {
     .offset = (Vector2){ SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f },
     .rotation = 0.0f,
@@ -242,9 +243,11 @@ int main(void) {
 	DrawTexturePro(DryMudTex, DryMudTextureSize, level->blocks[i], (Vector2){ 0, 0 },  0.0f, WHITE);
       }
 
+      Rectangle SpikeTextureSize = {0, 0, (float)SpikeTex.width, (float)SpikeTex.height};
       for (int i = 0; i < level->spikeCount; i++) {
-	DrawRectangleRec(level->spikes[i], BROWN);
+	DrawTexturePro(SpikeTex, SpikeTextureSize, level->spikes[i], (Vector2){ 0, 0 },  0.0f, WHITE);
       }
+
       EndMode2D();
       float actualSpeed = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
       DrawText(TextFormat("Speed: %.0f", actualSpeed), 10, 10, 20, WHITE);
@@ -288,6 +291,7 @@ int main(void) {
   UnloadTexture(SpongeTex);
   UnloadTexture(DryMudTex);
   UnloadTexture(FinishLineTex);
+  UnloadTexture(SpikeTex);
   UnloadMusicStream(pondTheme);
   UnloadMusicStream(woodTheme);
   CloseAudioDevice();
