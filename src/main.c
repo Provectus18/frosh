@@ -135,8 +135,8 @@ int main(void) {
       }
 
       // Sponge collision (Slow down)
-      if (CheckCollisionCircles(player.pos, player.radius, level->sponge.pos, level->sponge.radius)) {
-        decel = DECEL_SLOW_SPEED;
+      for (int i = 0; i < level->spongeCount; i++) {
+	if (CheckCollisionCircles(player.pos, player.radius, level->sponge[i].pos, level->sponge[i].radius)) decel = DECEL_SLOW_SPEED;
       }
 
       velocity.x *= decel;
@@ -223,10 +223,16 @@ int main(void) {
       DrawTexturePro(PlayerTex, playerSrcRec, playerRec, (Vector2){0, 0}, 0.0f, WHITE);
       DrawRectangle(level->finishLine.x, level->finishLine.y, level->finishLine.width, level->finishLine.height, ORANGE);
 			
-      float spongeDiameter = level->sponge.radius * 2;
-      Rectangle spongeRec = {level->sponge.pos.x - level->sponge.radius, level->sponge.pos.y - level->sponge.radius, spongeDiameter, spongeDiameter};
-      Rectangle spongeSrcRec = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
-      DrawTexturePro(SpongeTex, spongeSrcRec, spongeRec, (Vector2){ 0, 0 }, 0.0f, WHITE);
+      for (int i = 0; i < level->spongeCount; i++) {
+	float spongeDiameter = level->sponge[i].radius * 2;
+	Rectangle spongeRec = {
+	  level->sponge[i].pos.x - level->sponge[i].radius,
+	  level->sponge[i].pos.y - level->sponge[i].radius,
+	  spongeDiameter, spongeDiameter
+	};
+	Rectangle spongeSrcRec = {0, 0, (float)SpongeTex.width, (float)SpongeTex.height};
+	DrawTexturePro(SpongeTex, spongeSrcRec, spongeRec, (Vector2){0, 0}, 0.0f, WHITE);
+      }
 			
       Rectangle DryMudTextureSize = {0, 0, (float)DryMudTex.width, (float)DryMudTex.height};
       for (int i = 0; i < level->blockCount; i++) {
