@@ -68,19 +68,19 @@ int main(void) {
   InitAudioDevice();
   SetTargetFPS(60);
 
-  Music pondTheme = LoadMusicStream("../Music/pond.wav");
-  Music woodTheme = LoadMusicStream("../Music/wood.wav");
+  Music pondTheme = LoadMusicStream("../assets/music/pond.wav");
+  Music woodTheme = LoadMusicStream("../assets/music/wood.wav");
   SetMusicVolume(pondTheme, 0.7f);
   SetMusicVolume(pondTheme, 0.7f);
   PlayMusicStream(pondTheme);
   PlayMusicStream(woodTheme);
   
-  Texture2D PlayerTex = LoadTexture("../Textures/slingdo.png");
-  Texture2D IceTex = LoadTexture("../Textures/ice.png");
-  Texture2D SpongeTex = LoadTexture("../Textures/sponge.png");
-  Texture2D DryMudTex = LoadTexture("../Textures/dried-mud.png");
-  Texture2D SpikeTex = LoadTexture("../Textures/spike.png");
-  Texture2D FinishLineTex = LoadTexture("../Textures/flag.png");
+  Texture2D PlayerTex = LoadTexture("../assets/textures/slingdo.png");
+  Texture2D IceTex = LoadTexture("../assets/textures/ice.png");
+  Texture2D SpongeTex = LoadTexture("../assets/textures/sponge.png");
+  Texture2D DryMudTex = LoadTexture("../assets/textures/dried-mud.png");
+  Texture2D SpikeTex = LoadTexture("../assets/textures/spike.png");
+  Texture2D FinishLineTex = LoadTexture("../assets/textures/flag.png");
 
   Camera2D camera = {
     .offset = (Vector2){ SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f },
